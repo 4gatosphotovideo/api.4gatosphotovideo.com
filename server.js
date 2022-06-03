@@ -2,7 +2,13 @@
 
 const express = require('express');
 const {Datastore} = require('@google-cloud/datastore');
-
+const { auth } = require('express-oauth2-jwt-bearer');
+// Authorization middleware. When used, the Access Token must
+// exist and be verified against the Auth0 JSON Web Key Set.
+const checkJwt = auth({
+  audience: 'https://api.4gatosphotovideo.com',
+  issuerBaseURL: 'https://4gatosphotovideo.eu.auth0.com',
+});
 
 const app = express();
 app.use(express.json());
@@ -34,4 +40,11 @@ app.get('/images', async (req, res, next) => {
     next(error);
   }
   
+});
+
+// This route needs authentication
+app.get('/api/private', checkJwt, function(req, res) {
+  res.json({
+    message: 'Hello from a private endpoint! You need to be authenticated to see this.'
+  });
 });
